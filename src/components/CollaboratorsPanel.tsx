@@ -39,7 +39,7 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [username, setUsername] = useState('');
-  const [role, setRole] = useState('push');
+  const [role, setRole] = useState('pull');
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
@@ -387,8 +387,8 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
                 onFocus={(e) => { e.currentTarget.style.borderColor = '#1e3a5f'; }}
                 onBlur={(e) => { e.currentTarget.style.borderColor = '#d1d5db'; }}
               >
-                <option value="push">Write</option>
                 <option value="pull">Read</option>
+                <option value="push">Write</option>
                 <option value="admin">Admin</option>
               </select>
             </div>

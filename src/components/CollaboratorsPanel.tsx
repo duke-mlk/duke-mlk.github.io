@@ -60,10 +60,12 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
   }, [token]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isAdmin) {
       loadCollaborators();
+    } else if (isOpen) {
+      setLoading(false);
     }
-  }, [isOpen, loadCollaborators]);
+  }, [isOpen, isAdmin, loadCollaborators]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -231,7 +233,22 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
             </div>
           )}
 
-          {!loading && !error && collaborators.length === 0 && (
+          {!loading && !isAdmin && (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px' }}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <p style={{ color: '#6b7280', fontSize: '14px', margin: '0 0 8px', fontWeight: 500 }}>
+                Admin access required
+              </p>
+              <p style={{ color: '#9ca3af', fontSize: '13px', margin: 0, lineHeight: 1.5 }}>
+                Only repository admins can view and manage collaborators
+              </p>
+            </div>
+          )}
+
+          {!loading && !error && isAdmin && collaborators.length === 0 && (
             <p style={{ color: '#6b7280', fontSize: '14px', textAlign: 'center', padding: '40px 0' }}>
               No collaborators found
             </p>

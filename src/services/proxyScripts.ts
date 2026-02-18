@@ -67,7 +67,7 @@ export function createProxyRuntimeScript(token: string): string {
       return originalFetch(url, options);
     }
 
-    const path = url.replace(/^\\/+/, '').replace(/^\\/*/, '');
+    const path = url.replace(/^.*?\\/medical-flow\\//, '').replace(/^\\/*/, '');
     const isImage = path.startsWith('images/');
     const contentsUrl = '${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/contents/' + path + '?ref=${config.repository.branch}';
 

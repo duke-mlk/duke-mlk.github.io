@@ -23,14 +23,8 @@ function githubFetch(token: string, path: string, init?: RequestInit): Promise<R
 
 const cache = new Map<string, { content: string; etag: string }>();
 
-interface FetchFileOptions {
-  token: string;
-  useCache?: boolean;
-}
-
-export async function fetchFileContent(path: string, options: FetchFileOptions): Promise<string> {
-  const { token, useCache = true } = options;
-  const cached = useCache ? cache.get(path) : undefined;
+export async function fetchFileContent(path: string, token: string): Promise<string> {
+  const cached = cache.get(path);
 
   const headers: Record<string, string> = { ...githubHeaders(token) };
   if (cached) headers['If-None-Match'] = cached.etag;

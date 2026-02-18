@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { LoadingSpinner } from './LoadingSpinner';
 import { fetchFileContent } from '../services/githubApi';
@@ -12,35 +12,25 @@ export function Proxy({ token }: ProxyProps): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [blobUrl, setBlobUrl] = useState<string>('');
-  const currentPathRef = useRef<string>('');
 
   const fetchContent = useCallback((path: string) => {
-    return fetchFileContent(path, { token });
+    return fetchFileContent(path, token);
   }, [token]);
 
   useEffect(() => {
     async function loadDashboard(): Promise<void> {
-      const filePath = 'index.html';
-
-      if (currentPathRef.current === filePath) {
-        return;
-      }
-
       setLoading(true);
       setError(null);
 
       try {
-        const html = await fetchContent(filePath);
+        const html = await fetchContent('index.html');
         const fullHtml = await processProxyHtml(html, {
           token,
           fetchContent
         });
 
         const blob = new Blob([fullHtml], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-
-        setBlobUrl(url);
-        currentPathRef.current = filePath;
+        setBlobUrl(URL.createObjectURL(blob));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load content');
       } finally {

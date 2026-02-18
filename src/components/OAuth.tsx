@@ -22,7 +22,7 @@ function getRedirectUri(): string {
   return window.location.origin + window.location.pathname;
 }
 
-export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthenticated }: OAuthProps) {
+export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthenticated }: OAuthProps): React.ReactNode {
   const handled = useRef(false);
 
   useEffect(() => {

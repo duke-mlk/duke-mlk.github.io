@@ -1,15 +1,7 @@
 import { config } from '../config';
 import { getEmbeddedBase64Decoder } from '../utils/base64';
 
-/**
- * Creates a unified proxy runtime script for direct rendering (no iframe).
- * Handles:
- * - Base64 decoding for fetch interceptor
- * - History API polyfill
- * - Navigation interception
- * - Fetch interception for GitHub content
- */
-export function createProxyRuntimeScript(token: string): string {
+function createProxyRuntimeScript(token: string): string {
   return `
 (function() {
   'use strict';
@@ -112,9 +104,6 @@ export function createProxyRuntimeScript(token: string): string {
   `.trim();
 }
 
-/**
- * Injects the unified proxy runtime script into the document head.
- */
 export function injectProxyScripts(doc: Document, token: string): void {
   const script = doc.createElement('script');
   script.textContent = createProxyRuntimeScript(token);

@@ -1,7 +1,3 @@
-/**
- * Decodes base64 content to UTF-8 string.
- * Handles whitespace in base64 content and properly decodes multi-byte characters.
- */
 export function decodeBase64Utf8(base64Content: string): string {
   const base64 = base64Content.replace(/\s/g, '');
   const binaryString = atob(base64);
@@ -12,10 +8,7 @@ export function decodeBase64Utf8(base64Content: string): string {
   return new TextDecoder('utf-8').decode(bytes);
 }
 
-/**
- * Returns an embedded base64 decoder function as a string.
- * For injection into iframes where imports are not available.
- */
+/** Returns a base64 decoder function as a string for injection into proxy HTML. */
 export function getEmbeddedBase64Decoder(): string {
   return `
     function decodeBase64(base64Content) {

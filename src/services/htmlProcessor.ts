@@ -51,10 +51,6 @@ async function inlineExternalResources(
   }
 }
 
-/**
- * Parses HTML, inlines scripts/stylesheets, injects proxy runtime,
- * and returns the full HTML document string.
- */
 export async function processProxyHtml(
   html: string,
   options: HtmlProcessingOptions

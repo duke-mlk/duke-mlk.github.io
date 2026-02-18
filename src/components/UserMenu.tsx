@@ -31,11 +31,18 @@ export function UserMenu({ user, onLogout, token, userPermission }: UserMenuProp
       }
     }
 
+    // Close when clicking inside the iframe (window loses focus)
+    function handleBlur(): void {
+      setIsOpen(false);
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscape);
+    window.addEventListener('blur', handleBlur);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
+      window.removeEventListener('blur', handleBlur);
     };
   }, [isOpen]);
 

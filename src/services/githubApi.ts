@@ -101,3 +101,73 @@ export async function checkRepositoryAccess(token: string): Promise<void> {
 export function clearCache(): void {
   cache.clear();
 }
+
+export async function fetchCollaborators(token: string): Promise<Array<{ login: string; avatar_url: string; role_name: string }>> {
+  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3+json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch collaborators: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchUserPermission(token: string, username: string): Promise<'admin' | 'write' | 'read'> {
+  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators/${username}/permission`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3+json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch permission: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.permission;
+}
+
+export async function addCollaborator(token: string, username: string, permission: string): Promise<void> {
+  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators/${username}`;
+
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ permission })
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.message || `Failed to add collaborator: ${response.status}`);
+  }
+}
+
+export async function removeCollaborator(token: string, username: string): Promise<void> {
+  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators/${username}`;
+
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github.v3+json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to remove collaborator: ${response.status}`);
+  }
+}

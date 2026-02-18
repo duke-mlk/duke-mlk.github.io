@@ -4,3 +4,9 @@ export interface User {
   avatar_url: string;
   email?: string;
 }
+
+export interface Collaborator {
+  login: string;
+  avatar_url: string;
+  role_name: string;
+}

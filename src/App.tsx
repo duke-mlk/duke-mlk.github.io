@@ -6,7 +6,7 @@ import { OAuth } from './components/OAuth';
 import { Proxy } from './components/Proxy';
 import { UserMenu } from './components/UserMenu';
 import { useAuthStore } from './store/authStore';
-import { checkRepositoryAccess, TOKEN_EXPIRED } from './services/githubApi';
+import { checkRepositoryAccess, fetchUserPermission, TOKEN_EXPIRED } from './services/githubApi';
 
 interface AccessDeniedProps {
   onLogout: () => void;
@@ -89,7 +89,7 @@ function AccessDenied({ onLogout }: AccessDeniedProps): JSX.Element {
 }
 
 function App(): JSX.Element {
-  const { isAuthenticated, token, user, setAuth, logout } = useAuthStore();
+  const { isAuthenticated, token, user, userPermission, setAuth, setUserPermission, logout } = useAuthStore();
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -108,6 +108,11 @@ function App(): JSX.Element {
     try {
       await checkRepositoryAccess(accessToken);
       setHasAccess(true);
+      if (user) {
+        fetchUserPermission(accessToken, user.login)
+          .then(setUserPermission)
+          .catch(() => {});
+      }
     } catch (error) {
       if (error instanceof Error && error.message === TOKEN_EXPIRED) {
         console.warn('Token expired or invalid, logging out');
@@ -119,7 +124,7 @@ function App(): JSX.Element {
     } finally {
       setIsChecking(false);
     }
-  }, [logout]);
+  }, [logout, user, setUserPermission]);
 
   useEffect(() => {
     if (isAuthenticated && token) {
@@ -142,7 +147,7 @@ function App(): JSX.Element {
     >
       {hasAccess && (
         <>
-          <UserMenu user={user} onLogout={logout} />
+          <UserMenu user={user} onLogout={logout} token={token} userPermission={userPermission} />
           <Proxy token={token!} />
         </>
       )}

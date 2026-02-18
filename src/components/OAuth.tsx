@@ -95,21 +95,18 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
     });
 
     return (
-      <div style={{
-        minHeight: '100vh',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      <div style={{ minHeight: '100dvh' }}>
         {/* Blurred placeholder dashboard */}
         <div
           aria-hidden="true"
           style={{
-            position: 'absolute',
+            position: 'fixed',
             inset: 0,
             filter: 'blur(6px)',
             opacity: 0.55,
             display: 'flex',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            overflow: 'hidden'
           }}
         >
           {/* Sidebar */}
@@ -119,7 +116,8 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
             background: '#1a1a2e',
             padding: '16px 12px',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            height: '100vh'
           }}>
             {/* Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 16px 24px' }}>
@@ -148,7 +146,7 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
           </div>
 
           {/* Main content */}
-          <div style={{ flex: 1, background: '#f5f5f0', overflow: 'hidden' }}>
+          <div style={{ flex: 1, background: '#f5f5f0', height: '100vh', overflow: 'hidden' }}>
             {/* Header */}
             <div style={{
               height: '64px',
@@ -263,7 +261,7 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
         <div style={{
           position: 'relative',
           zIndex: 1,
-          minHeight: '100vh',
+          minHeight: '100dvh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

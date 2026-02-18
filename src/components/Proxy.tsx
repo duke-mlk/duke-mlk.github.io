@@ -31,19 +31,17 @@ export function Proxy({ token }: ProxyProps): JSX.Element {
 
       try {
         const html = await fetchContent(filePath);
-        const processed = await processProxyHtml(html, {
+        const fullHtml = await processProxyHtml(html, {
           token,
           fetchContent
         });
 
-        // Create blob URL from full HTML
-        const blob = new Blob([processed.fullHtml], { type: 'text/html' });
+        const blob = new Blob([fullHtml], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
 
         setBlobUrl(url);
         currentPathRef.current = filePath;
       } catch (err) {
-        console.error('Failed to load content:', err);
         setError(err instanceof Error ? err.message : 'Failed to load content');
       } finally {
         setLoading(false);
@@ -53,7 +51,6 @@ export function Proxy({ token }: ProxyProps): JSX.Element {
     loadDashboard();
   }, [fetchContent, token]);
 
-  // Cleanup blob URL on unmount
   useEffect(() => {
     return () => {
       if (blobUrl) {

@@ -1,22 +1,27 @@
 import { config } from '../config';
 import { decodeBase64Utf8 } from '../utils/base64';
+import type { Collaborator } from '../types';
 
 export const TOKEN_EXPIRED = 'TOKEN_EXPIRED';
 
-interface CacheEntry {
-  content: string;
-  etag: string;
+const { owner, name: repo, branch } = config.repository;
+const repoBase = `${config.api.baseUrl}/repos/${owner}/${repo}`;
+
+function githubHeaders(token: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github.v3+json'
+  };
 }
 
-const cache = new Map<string, CacheEntry>();
-
-function getCachedContent(path: string): CacheEntry | null {
-  return cache.get(path) || null;
+function githubFetch(token: string, path: string, init?: RequestInit): Promise<Response> {
+  return fetch(`${repoBase}${path}`, {
+    ...init,
+    headers: { ...githubHeaders(token), ...init?.headers }
+  });
 }
 
-function setCachedContent(path: string, content: string, etag: string): void {
-  cache.set(path, { content, etag });
-}
+const cache = new Map<string, { content: string; etag: string }>();
 
 interface FetchFileOptions {
   token: string;
@@ -25,18 +30,12 @@ interface FetchFileOptions {
 
 export async function fetchFileContent(path: string, options: FetchFileOptions): Promise<string> {
   const { token, useCache = true } = options;
+  const cached = useCache ? cache.get(path) : undefined;
 
-  const cached = useCache ? getCachedContent(path) : null;
-
-  const contentsUrl = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/contents/${path}?ref=${config.repository.branch}`;
-
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-    Accept: 'application/vnd.github.v3+json'
-  };
+  const headers: Record<string, string> = { ...githubHeaders(token) };
   if (cached) headers['If-None-Match'] = cached.etag;
 
-  const response = await fetch(contentsUrl, { headers });
+  const response = await fetch(`${repoBase}/contents/${path}?ref=${branch}`, { headers });
 
   if (response.status === 304 && cached) {
     return cached.content;
@@ -49,45 +48,25 @@ export async function fetchFileContent(path: string, options: FetchFileOptions):
   const etag = response.headers.get('ETag') || '';
   const data = await response.json();
 
-  // Large files (>1MB) have encoding: "none" and no content
-  // Use Git Blob API which works for any size
+  // Large files (>1MB) have encoding: "none" and no content — use Git Blob API
   if (data.encoding === 'none' || !data.content) {
-    if (!data.sha) {
-      throw new Error(`No SHA for large file: ${path}`);
-    }
-
-    const blobUrl = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/git/blobs/${data.sha}`;
-    const blobResponse = await fetch(blobUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3+json'
-      }
-    });
-
+    const blobResponse = await githubFetch(token, `/git/blobs/${data.sha}`);
     if (!blobResponse.ok) {
       throw new Error(`Failed to fetch blob for ${path}: ${blobResponse.status}`);
     }
-
     const blobData = await blobResponse.json();
     const content = decodeBase64Utf8(blobData.content);
-    if (etag) setCachedContent(path, content, etag);
+    if (etag) cache.set(path, { content, etag });
     return content;
   }
 
   const content = decodeBase64Utf8(data.content);
-  if (etag) setCachedContent(path, content, etag);
+  if (etag) cache.set(path, { content, etag });
   return content;
 }
 
 export async function checkRepositoryAccess(token: string): Promise<void> {
-  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}`;
-
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json'
-    }
-  });
+  const response = await githubFetch(token, '');
 
   if (response.status === 401) {
     throw new Error(TOKEN_EXPIRED);
@@ -98,19 +77,8 @@ export async function checkRepositoryAccess(token: string): Promise<void> {
   }
 }
 
-export function clearCache(): void {
-  cache.clear();
-}
-
-export async function fetchCollaborators(token: string): Promise<Array<{ login: string; avatar_url: string; role_name: string }>> {
-  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators`;
-
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json'
-    }
-  });
+export async function fetchCollaborators(token: string): Promise<Collaborator[]> {
+  const response = await githubFetch(token, '/collaborators');
 
   if (!response.ok) {
     throw new Error(`Failed to fetch collaborators: ${response.status}`);
@@ -120,14 +88,7 @@ export async function fetchCollaborators(token: string): Promise<Array<{ login: 
 }
 
 export async function fetchUserPermission(token: string, username: string): Promise<'admin' | 'write' | 'read'> {
-  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators/${username}/permission`;
-
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json'
-    }
-  });
+  const response = await githubFetch(token, `/collaborators/${username}/permission`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch permission: ${response.status}`);
@@ -138,15 +99,9 @@ export async function fetchUserPermission(token: string, username: string): Prom
 }
 
 export async function addCollaborator(token: string, username: string, permission: string): Promise<'invited' | 'added'> {
-  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators/${username}`;
-
-  const response = await fetch(url, {
+  const response = await githubFetch(token, `/collaborators/${username}`, {
     method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ permission })
   });
 
@@ -155,19 +110,12 @@ export async function addCollaborator(token: string, username: string, permissio
     throw new Error(data.message || `Failed to add collaborator: ${response.status}`);
   }
 
-  // 201 = invitation created, 204 = already a collaborator (permission updated)
   return response.status === 201 ? 'invited' : 'added';
 }
 
 export async function removeCollaborator(token: string, username: string): Promise<void> {
-  const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators/${username}`;
-
-  const response = await fetch(url, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json'
-    }
+  const response = await githubFetch(token, `/collaborators/${username}`, {
+    method: 'DELETE'
   });
 
   if (!response.ok) {

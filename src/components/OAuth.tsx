@@ -313,18 +313,7 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  fontSize: '16px',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = '#0F172A';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                  e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = '#1E293B';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  fontSize: '16px'
                 }}
               >
                 <svg style={{ width: '20px', height: '20px' }} fill="currentColor" viewBox="0 0 24 24">
@@ -332,10 +321,6 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
                 </svg>
                 Sign in with GitHub
               </button>
-
-              <p style={{ fontSize: '12px', textAlign: 'center', color: '#9ca3af', marginTop: '16px' }}>
-                Sign in to continue
-              </p>
             </div>
           </div>
         </div>

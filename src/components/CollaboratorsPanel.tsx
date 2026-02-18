@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Collaborator } from '../types';
 import { fetchCollaborators, addCollaborator, removeCollaborator } from '../services/githubApi';
 
@@ -34,6 +34,23 @@ function RoleBadge({ role }: { role: string }): JSX.Element {
   );
 }
 
+function FormMessage({ text, variant }: { text: string; variant: 'success' | 'error' }): JSX.Element {
+  const styles = variant === 'success'
+    ? { background: '#f0fdf4', color: '#166534' }
+    : { background: '#fef2f2', color: '#991b1b' };
+  return (
+    <div style={{
+      padding: '8px 12px',
+      borderRadius: '6px',
+      fontSize: '13px',
+      marginBottom: '10px',
+      ...styles
+    }}>
+      {text}
+    </div>
+  );
+}
+
 export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmin }: CollaboratorsPanelProps): JSX.Element | null {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +61,6 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState<string | null>(null);
   const [removingUser, setRemovingUser] = useState<string | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   const loadCollaborators = useCallback(async () => {
     setLoading(true);
@@ -139,7 +155,6 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
 
       {/* Panel */}
       <div
-        ref={panelRef}
         role="dialog"
         aria-label="Collaborators"
         style={{
@@ -342,31 +357,8 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
               background: 'white'
             }}
           >
-            {addSuccess && (
-              <div style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                background: '#f0fdf4',
-                color: '#166534',
-                fontSize: '13px',
-                marginBottom: '10px'
-              }}>
-                {addSuccess}
-              </div>
-            )}
-
-            {addError && (
-              <div style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                background: '#fef2f2',
-                color: '#991b1b',
-                fontSize: '13px',
-                marginBottom: '10px'
-              }}>
-                {addError}
-              </div>
-            )}
+            {addSuccess && <FormMessage text={addSuccess} variant="success" />}
+            {addError && <FormMessage text={addError} variant="error" />}
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
               <input
@@ -385,8 +377,6 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
                   background: '#fafaf8',
                   minWidth: 0
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#1e3a5f'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#d1d5db'; }}
               />
               <select
                 value={role}
@@ -401,8 +391,6 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
                   background: '#fafaf8',
                   cursor: 'pointer'
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#1e3a5f'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#d1d5db'; }}
               >
                 <option value="pull">Read</option>
                 <option value="push">Write</option>
@@ -422,18 +410,7 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
                 background: adding || !username.trim() ? '#9ca3af' : '#1e3a5f',
                 border: 'none',
                 borderRadius: '8px',
-                cursor: adding || !username.trim() ? 'not-allowed' : 'pointer',
-                transition: 'background 0.15s'
-              }}
-              onMouseEnter={(e) => {
-                if (!adding && username.trim()) {
-                  e.currentTarget.style.background = '#2c4f7c';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!adding && username.trim()) {
-                  e.currentTarget.style.background = '#1e3a5f';
-                }
+                cursor: adding || !username.trim() ? 'not-allowed' : 'pointer'
               }}
             >
               {adding ? 'Inviting...' : 'Invite collaborator'}

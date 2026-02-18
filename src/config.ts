@@ -1,6 +1,4 @@
 export const config = {
-  basePath: '',
-
   repository: {
     owner: 'duke-mlk',
     name: 'medical-flow',

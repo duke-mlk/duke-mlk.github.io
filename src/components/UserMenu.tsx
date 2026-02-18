@@ -48,19 +48,51 @@ export function UserMenu({ user, onLogout, token, userPermission }: UserMenuProp
 
   if (!user) return null;
 
-  const menuButtonStyle: React.CSSProperties = {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px 16px',
-    fontSize: '14px',
-    background: 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s',
-    textAlign: 'left'
-  };
+  const menuItems = [
+    {
+      label: 'Refresh',
+      ariaLabel: 'Refresh page',
+      onClick: () => window.location.reload(),
+      color: '#374151',
+      hoverBg: '#f9fafb',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="23 4 23 10 17 10" />
+          <polyline points="1 20 1 14 7 14" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
+      )
+    },
+    {
+      label: 'Collaborators',
+      ariaLabel: 'Manage collaborators',
+      onClick: () => { setIsOpen(false); setShowCollaborators(true); },
+      color: '#374151',
+      hoverBg: '#f9fafb',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      )
+    },
+    {
+      label: 'Logout',
+      ariaLabel: 'Log out',
+      onClick: onLogout,
+      color: '#dc2626',
+      hoverBg: '#fef2f2',
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      )
+    }
+  ];
 
   return (
     <>
@@ -150,70 +182,32 @@ export function UserMenu({ user, onLogout, token, userPermission }: UserMenuProp
             transform: isOpen ? 'translateY(0)' : 'translateY(-8px)'
           }}
         >
-          <button
-            onClick={() => window.location.reload()}
-            aria-label="Refresh page"
-            style={{ ...menuButtonStyle, color: '#374151' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#f9fafb';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="23 4 23 10 17 10" />
-              <polyline points="1 20 1 14 7 14" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
-            Refresh
-          </button>
-
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              setShowCollaborators(true);
-            }}
-            aria-label="Manage collaborators"
-            style={{ ...menuButtonStyle, color: '#374151', borderTop: '1px solid #f3f4f6' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#f9fafb';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            Collaborators
-          </button>
-
-          <button
-            onClick={onLogout}
-            aria-label="Log out"
-            style={{
-              ...menuButtonStyle,
-              color: '#dc2626',
-              borderTop: '1px solid #f3f4f6'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#fef2f2';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Logout
-          </button>
+          {menuItems.map((item, i) => (
+            <button
+              key={item.label}
+              onClick={item.onClick}
+              aria-label={item.ariaLabel}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                fontSize: '14px',
+                background: 'transparent',
+                border: 'none',
+                borderTop: i > 0 ? '1px solid #f3f4f6' : 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+                color: item.color
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = item.hoverBg; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
         </div>
       </div>
 

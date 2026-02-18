@@ -6,83 +6,63 @@ export interface HtmlProcessingOptions {
   fetchContent: (path: string) => Promise<string>;
 }
 
-export interface ProcessedHtml {
-  fullHtml: string;
+interface InlineRule {
+  selector: string;
+  srcAttr: string;
+  createReplacement: (doc: Document, content: string, original: Element) => Element;
 }
 
-/**
- * Inlines external scripts into the document.
- * Skips absolute URLs (http/https).
- */
-async function inlineScripts(doc: Document, fetchContent: (path: string) => Promise<string>): Promise<void> {
-  const scripts = doc.querySelectorAll('script[src]');
+const inlineRules: InlineRule[] = [
+  {
+    selector: 'script[src]',
+    srcAttr: 'src',
+    createReplacement(doc, content, original) {
+      const el = doc.createElement('script');
+      const type = original.getAttribute('type');
+      if (type) el.setAttribute('type', type);
+      el.textContent = content;
+      return el;
+    }
+  },
+  {
+    selector: 'link[rel="stylesheet"][href]',
+    srcAttr: 'href',
+    createReplacement(doc, content) {
+      const el = doc.createElement('style');
+      el.textContent = content;
+      return el;
+    }
+  }
+];
 
-  for (const script of scripts) {
-    const src = script.getAttribute('src');
-    if (!src || src.startsWith('http')) continue;
+async function inlineExternalResources(
+  doc: Document,
+  fetchContent: (path: string) => Promise<string>
+): Promise<void> {
+  for (const rule of inlineRules) {
+    const elements = doc.querySelectorAll(rule.selector);
+    for (const el of elements) {
+      const src = el.getAttribute(rule.srcAttr);
+      if (!src || src.startsWith('http')) continue;
 
-    try {
-      const strippedPath = stripAssetPathPrefix(src);
-      const content = await fetchContent(strippedPath);
-      const inlineScript = doc.createElement('script');
-      const scriptType = script.getAttribute('type');
-      if (scriptType) {
-        inlineScript.setAttribute('type', scriptType);
-      }
-      inlineScript.textContent = content;
-      script.replaceWith(inlineScript);
-    } catch (err) {
-      console.error(`Failed to inline script ${src}:`, err);
-      throw err;
+      const content = await fetchContent(stripAssetPathPrefix(src));
+      el.replaceWith(rule.createReplacement(doc, content, el));
     }
   }
 }
 
 /**
- * Inlines external stylesheets into the document.
- * Skips absolute URLs (http/https).
- */
-async function inlineStylesheets(doc: Document, fetchContent: (path: string) => Promise<string>): Promise<void> {
-  const links = doc.querySelectorAll('link[rel="stylesheet"][href]');
-
-  for (const link of links) {
-    const href = link.getAttribute('href');
-    if (!href || href.startsWith('http')) continue;
-
-    try {
-      const strippedPath = stripAssetPathPrefix(href);
-      const content = await fetchContent(strippedPath);
-      const style = doc.createElement('style');
-      style.textContent = content;
-      link.replaceWith(style);
-    } catch (err) {
-      console.error(`Failed to inline stylesheet ${href}:`, err);
-      throw err;
-    }
-  }
-}
-
-/**
- * Processes HTML for blob URL rendering.
- * Pipeline:
- * 1. Parse HTML with DOMParser
- * 2. Inline scripts
- * 3. Inline stylesheets
- * 4. Inject proxy scripts
- * 5. Return full HTML document
+ * Parses HTML, inlines scripts/stylesheets, injects proxy runtime,
+ * and returns the full HTML document string.
  */
 export async function processProxyHtml(
   html: string,
   options: HtmlProcessingOptions
-): Promise<ProcessedHtml> {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+): Promise<string> {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
 
-  await inlineScripts(doc, options.fetchContent);
-  await inlineStylesheets(doc, options.fetchContent);
+  await inlineExternalResources(doc, options.fetchContent);
   injectProxyScripts(doc, options.token);
 
-  return {
-    fullHtml: doc.documentElement.outerHTML
-  };
+  return doc.documentElement.outerHTML;
 }

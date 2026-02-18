@@ -68,16 +68,7 @@ function AccessDenied({ onLogout }: AccessDeniedProps): JSX.Element {
               borderRadius: '8px',
               border: 'none',
               cursor: 'pointer',
-              fontSize: '16px',
-              transition: 'all 0.2s'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              fontSize: '16px'
             }}
           >
             Sign Out
@@ -89,7 +80,7 @@ function AccessDenied({ onLogout }: AccessDeniedProps): JSX.Element {
 }
 
 function App(): JSX.Element {
-  const { isAuthenticated, token, user, userPermission, setAuth, setUserPermission, logout } = useAuthStore();
+  const { token, user, userPermission, setAuth, setUserPermission, logout } = useAuthStore();
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -115,11 +106,9 @@ function App(): JSX.Element {
       }
     } catch (error) {
       if (error instanceof Error && error.message === TOKEN_EXPIRED) {
-        console.warn('Token expired or invalid, logging out');
         logout();
         return;
       }
-      console.error('Failed to check repo access:', error);
       setHasAccess(false);
     } finally {
       setIsChecking(false);
@@ -127,12 +116,12 @@ function App(): JSX.Element {
   }, [logout, user, setUserPermission]);
 
   useEffect(() => {
-    if (isAuthenticated && token) {
+    if (token) {
       checkRepoAccess(token);
     } else {
       setIsChecking(false);
     }
-  }, [isAuthenticated, token, checkRepoAccess]);
+  }, [token, checkRepoAccess]);
 
   if (isChecking) {
     return <LoadingSpinner message="Checking access..." />;
@@ -143,7 +132,7 @@ function App(): JSX.Element {
       clientId={config.oauth.clientId}
       proxyUrl={config.oauth.proxyUrl}
       onAuthChange={setAuth}
-      isAuthenticated={isAuthenticated}
+      isAuthenticated={!!token}
     >
       {hasAccess && (
         <>

@@ -5,7 +5,6 @@ import type { User } from '../types';
 interface AuthState {
   token: string | null;
   user: User | null;
-  isAuthenticated: boolean;
   userPermission: 'admin' | 'write' | 'read' | null;
   setAuth: (token: string, user: User) => void;
   setUserPermission: (permission: 'admin' | 'write' | 'read') => void;
@@ -17,12 +16,11 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      isAuthenticated: false,
       userPermission: null,
-      setAuth: (token, user) => set({ token, user, isAuthenticated: true }),
+      setAuth: (token, user) => set({ token, user }),
       setUserPermission: (permission) => set({ userPermission: permission }),
       logout: () => {
-        set({ token: null, user: null, isAuthenticated: false, userPermission: null });
+        set({ token: null, user: null, userPermission: null });
         localStorage.removeItem('auth-storage');
         window.location.href = '/';
       }

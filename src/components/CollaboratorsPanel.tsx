@@ -42,6 +42,7 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
   const [role, setRole] = useState('push');
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [addSuccess, setAddSuccess] = useState<string | null>(null);
   const [removingUser, setRemovingUser] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -82,9 +83,15 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
 
     setAdding(true);
     setAddError(null);
+    setAddSuccess(null);
     try {
-      await addCollaborator(token, trimmed, role);
+      const result = await addCollaborator(token, trimmed, role);
       setUsername('');
+      setAddSuccess(
+        result === 'invited'
+          ? `Invitation sent to ${trimmed}`
+          : `${trimmed} updated`
+      );
       await loadCollaborators();
     } catch (err) {
       setAddError(err instanceof Error ? err.message : 'Failed to add collaborator');
@@ -318,6 +325,19 @@ export function CollaboratorsPanel({ isOpen, onClose, token, currentUser, isAdmi
               background: 'white'
             }}
           >
+            {addSuccess && (
+              <div style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                background: '#f0fdf4',
+                color: '#166534',
+                fontSize: '13px',
+                marginBottom: '10px'
+              }}>
+                {addSuccess}
+              </div>
+            )}
+
             {addError && (
               <div style={{
                 padding: '8px 12px',

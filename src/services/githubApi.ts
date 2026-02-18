@@ -137,7 +137,7 @@ export async function fetchUserPermission(token: string, username: string): Prom
   return data.permission;
 }
 
-export async function addCollaborator(token: string, username: string, permission: string): Promise<void> {
+export async function addCollaborator(token: string, username: string, permission: string): Promise<'invited' | 'added'> {
   const url = `${config.api.baseUrl}/repos/${config.repository.owner}/${config.repository.name}/collaborators/${username}`;
 
   const response = await fetch(url, {
@@ -154,6 +154,9 @@ export async function addCollaborator(token: string, username: string, permissio
     const data = await response.json().catch(() => ({}));
     throw new Error(data.message || `Failed to add collaborator: ${response.status}`);
   }
+
+  // 201 = invitation created, 204 = already a collaborator (permission updated)
+  return response.status === 201 ? 'invited' : 'added';
 }
 
 export async function removeCollaborator(token: string, username: string): Promise<void> {

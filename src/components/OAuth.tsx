@@ -71,10 +71,27 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
   }
 
   if (!isAuthenticated) {
-    const skeletonBlock = (height: string): React.CSSProperties => ({
+    const skel = (h: string, w?: string): React.CSSProperties => ({
       background: '#e5e7eb',
+      borderRadius: '6px',
+      height: h,
+      width: w
+    });
+
+    const card: React.CSSProperties = {
+      background: 'white',
+      borderRadius: '12px',
+      padding: '20px',
+      border: '1px solid #e5e7eb'
+    };
+
+    const sidebarItem = (active?: boolean): React.CSSProperties => ({
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '10px 16px',
       borderRadius: '8px',
-      height
+      background: active ? 'rgba(255,255,255,0.08)' : 'transparent'
     });
 
     return (
@@ -89,83 +106,156 @@ export function OAuth({ children, clientId, proxyUrl, onAuthChange, isAuthentica
           style={{
             position: 'absolute',
             inset: 0,
-            filter: 'blur(12px)',
-            opacity: 0.6,
-            background: '#fafaf8',
-            padding: '24px',
+            filter: 'blur(6px)',
+            opacity: 0.55,
+            display: 'flex',
             pointerEvents: 'none'
           }}
         >
-          {/* Nav bar skeleton */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-            <div style={{ ...skeletonBlock('28px'), width: '140px' }} />
-            <div style={{ flex: 1 }} />
-            <div style={{ ...skeletonBlock('20px'), width: '80px' }} />
-            <div style={{ ...skeletonBlock('20px'), width: '80px' }} />
-            <div style={{ ...skeletonBlock('20px'), width: '80px' }} />
-          </div>
-
-          {/* Stat cards row */}
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '28px' }}>
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} style={{
-                flex: 1,
-                background: 'white',
-                borderRadius: '12px',
-                padding: '20px',
-                border: '1px solid #e5e7eb'
-              }}>
-                <div style={{ ...skeletonBlock('14px'), width: '60%', marginBottom: '12px' }} />
-                <div style={{ ...skeletonBlock('32px'), width: '40%' }} />
-              </div>
-            ))}
-          </div>
-
-          {/* Charts row */}
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '28px' }}>
-            <div style={{
-              flex: 2,
-              background: 'white',
-              borderRadius: '12px',
-              padding: '20px',
-              border: '1px solid #e5e7eb'
-            }}>
-              <div style={{ ...skeletonBlock('16px'), width: '30%', marginBottom: '20px' }} />
-              <div style={skeletonBlock('200px')} />
-            </div>
-            <div style={{
-              flex: 1,
-              background: 'white',
-              borderRadius: '12px',
-              padding: '20px',
-              border: '1px solid #e5e7eb'
-            }}>
-              <div style={{ ...skeletonBlock('16px'), width: '50%', marginBottom: '20px' }} />
-              <div style={skeletonBlock('200px')} />
-            </div>
-          </div>
-
-          {/* Table skeleton */}
+          {/* Sidebar */}
           <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '20px',
-            border: '1px solid #e5e7eb'
+            width: '256px',
+            flexShrink: 0,
+            background: '#1a1a2e',
+            padding: '16px 12px',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
-            <div style={{ ...skeletonBlock('16px'), width: '25%', marginBottom: '20px' }} />
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} style={{
-                display: 'flex',
-                gap: '16px',
-                padding: '12px 0',
-                borderTop: i > 1 ? '1px solid #f3f4f6' : 'none'
-              }}>
-                <div style={{ ...skeletonBlock('16px'), flex: 2 }} />
-                <div style={{ ...skeletonBlock('16px'), flex: 1 }} />
-                <div style={{ ...skeletonBlock('16px'), flex: 1 }} />
-                <div style={{ ...skeletonBlock('16px'), width: '60px' }} />
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 16px 24px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#0d9488' }} />
+              <div>
+                <div style={{ ...skel('12px', '90px'), background: 'rgba(255,255,255,0.3)' }} />
+                <div style={{ ...skel('9px', '70px'), background: 'rgba(255,255,255,0.15)', marginTop: '6px' }} />
+              </div>
+            </div>
+
+            {/* Nav items */}
+            {[true, false, false, false, false, false, false, false].map((active, i) => (
+              <div key={i} style={sidebarItem(active)}>
+                <div style={{ width: '18px', height: '18px', borderRadius: '4px', background: active ? '#0d9488' : 'rgba(255,255,255,0.15)' }} />
+                <div style={{ ...skel('11px', `${60 + (i % 3) * 20}px`), background: active ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)' }} />
               </div>
             ))}
+
+            <div style={{ flex: 1 }} />
+
+            {/* Sidebar footer */}
+            <div style={{ padding: '12px 16px' }}>
+              <div style={{ ...skel('9px', '110px'), background: 'rgba(255,255,255,0.1)', marginBottom: '6px' }} />
+              <div style={{ ...skel('9px', '80px'), background: 'rgba(255,255,255,0.1)' }} />
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div style={{ flex: 1, background: '#f5f5f0', overflow: 'hidden' }}>
+            {/* Header */}
+            <div style={{
+              height: '64px',
+              background: 'white',
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 24px'
+            }}>
+              <div style={skel('18px', '120px')} />
+            </div>
+
+            {/* Filter bar */}
+            <div style={{
+              height: '48px',
+              background: 'rgba(245,245,240,0.9)',
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '0 24px'
+            }}>
+              {[80, 120, 120, 120, 160].map((w, i) => (
+                <div key={i} style={{ ...skel('28px', `${w}px`), background: 'white', border: '1px solid #e5e7eb' }} />
+              ))}
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '24px', overflow: 'hidden' }}>
+              {/* Gradient banner */}
+              <div style={{
+                background: 'linear-gradient(135deg, #0d9488, #14b8a6, #0d9488)',
+                borderRadius: '12px',
+                padding: '24px',
+                marginBottom: '20px'
+              }}>
+                <div style={{ ...skel('16px', '280px'), background: 'rgba(255,255,255,0.35)', marginBottom: '10px' }} />
+                <div style={{ ...skel('11px', '350px'), background: 'rgba(255,255,255,0.2)' }} />
+              </div>
+
+              {/* 3 metric cards */}
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+                {[
+                  { accent: '#dc2626' },
+                  { accent: '#0d9488' },
+                  { accent: '#6b7280' }
+                ].map((c, i) => (
+                  <div key={i} style={{ ...card, flex: 1, display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: c.accent + '18', flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ ...skel('11px', '70%'), marginBottom: '10px' }} />
+                      <div style={{ ...skel('24px', '45%') }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Donut chart + scatter */}
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ ...card, flex: 1 }}>
+                  <div style={{ ...skel('14px', '55%'), marginBottom: '16px' }} />
+                  <div style={{
+                    width: '160px',
+                    height: '160px',
+                    borderRadius: '50%',
+                    border: '20px solid #e5e7eb',
+                    borderTopColor: '#dc2626',
+                    borderRightColor: '#f59e0b',
+                    margin: '12px auto'
+                  }} />
+                </div>
+                <div style={{ ...card, flex: 1 }}>
+                  <div style={{ ...skel('14px', '65%'), marginBottom: '16px' }} />
+                  <div style={skel('180px')} />
+                </div>
+              </div>
+
+              {/* 2-col charts */}
+              <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ ...card, flex: 1 }}>
+                  <div style={{ ...skel('14px', '50%'), marginBottom: '16px' }} />
+                  <div style={skel('160px')} />
+                </div>
+                <div style={{ ...card, flex: 1 }}>
+                  <div style={{ ...skel('14px', '45%'), marginBottom: '16px' }} />
+                  <div style={skel('160px')} />
+                </div>
+              </div>
+
+              {/* Table */}
+              <div style={card}>
+                <div style={{ ...skel('14px', '20%'), marginBottom: '16px' }} />
+                {[0, 1, 2, 3, 4].map(i => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    gap: '12px',
+                    padding: '10px 0',
+                    borderTop: i > 0 ? '1px solid #f3f4f6' : 'none'
+                  }}>
+                    <div style={{ ...skel('14px'), flex: 2 }} />
+                    <div style={{ ...skel('14px'), flex: 1 }} />
+                    <div style={{ ...skel('14px'), flex: 1 }} />
+                    <div style={{ ...skel('14px', '50px') }} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

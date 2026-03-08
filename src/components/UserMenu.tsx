@@ -111,11 +111,11 @@ export function UserMenu({ user, onLogout, token, userPermission }: UserMenuProp
             backdropFilter: 'blur(12px)',
             border: '1px solid #e5e7eb',
             borderRadius: '9999px',
-            padding: '4px',
+            padding: '0',
             cursor: 'pointer',
             transition: 'all 0.3s ease-out',
             boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-            paddingRight: isExpanded ? '12px' : '4px'
+            paddingRight: isExpanded ? '10px' : '0'
           }}
         >
           <img

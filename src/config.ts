@@ -5,10 +5,6 @@ export const config = {
     branch: 'gh-pages'
   },
 
-  oauth: {
-    clientId: 'Ov23liegJIMKGfuMVJip',
-  },
-
   api: {
     baseUrl: 'https://api.github.com'
   }
